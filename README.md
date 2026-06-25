@@ -39,6 +39,7 @@ selection and the duty-cycle / direct-vs-pilot reasoning, and
 | `cad/poppet.py` | moving poppet | SLA rigid resin |
 | `cad/tpu_disc.py` | flat sealing gasket | **FDM TPU ~95A** |
 | `cad/manifold.py` | 1-inlet → 2-channel supply manifold | SLA rigid resin |
+| `cad/solenoid_model.py` | reference coil + plunger (for fit only) | **bought, not printed** |
 | `cad/assembly.py` | full + Y=0 section render (STL + PNG) | — |
 
 Dimensions are chained by imports (`tpu_disc → poppet → solenoid_block → interface ←

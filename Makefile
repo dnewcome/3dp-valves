@@ -4,13 +4,16 @@ BUILD := build
 
 PARTS     := solenoid_block poppet tpu_disc manifold
 PART_STLS := $(addprefix $(BUILD)/,$(addsuffix .stl,$(PARTS)))
+REF_STLS  := $(BUILD)/solenoid_coil.stl $(BUILD)/solenoid_plunger.stl
 
-.PHONY: all parts assembly deps clean help
+.PHONY: all parts refs assembly deps clean help
 .DEFAULT_GOAL := all
 
-all: parts assembly ## Build every part + the assembly/section render
+all: parts refs assembly ## Build every part + reference solenoid + the renders
 
-parts: $(PART_STLS) ## Build all part STLs
+parts: $(PART_STLS) ## Build all printable part STLs
+
+refs: $(REF_STLS) ## Build the reference (non-printed) solenoid model
 
 assembly: $(BUILD)/assembly.stl ## Build full + sectioned assembly (STL + PNG)
 
@@ -30,10 +33,15 @@ $(BUILD)/tpu_disc.stl: $(CAD)/tpu_disc.py $(CAD)/poppet.py $(CAD)/solenoid_block
 $(BUILD)/manifold.stl: $(CAD)/manifold.py $(CAD)/interface.py
 	$(PY) $(CAD)/manifold.py
 
-# --- assembly (loads the part STLs; one run emits stl + section stl + png) ---
-$(BUILD)/assembly.stl: $(CAD)/assembly.py $(PART_STLS)
+# --- reference solenoid (one run emits coil + plunger STLs) ---
+$(BUILD)/solenoid_coil.stl: $(CAD)/solenoid_model.py $(CAD)/solenoid_block.py $(CAD)/poppet.py $(CAD)/interface.py
+	$(PY) $(CAD)/solenoid_model.py
+$(BUILD)/solenoid_plunger.stl: $(BUILD)/solenoid_coil.stl
+
+# --- assembly (loads the part STLs; one run emits stl + section stl + 2 pngs) ---
+$(BUILD)/assembly.stl: $(CAD)/assembly.py $(PART_STLS) $(REF_STLS)
 	$(PY) $(CAD)/assembly.py
-$(BUILD)/assembly_section.stl $(BUILD)/assembly_section.png: $(BUILD)/assembly.stl
+$(BUILD)/assembly_section.stl $(BUILD)/assembly.png $(BUILD)/assembly_section.png: $(BUILD)/assembly.stl
 
 clean: ## Remove all build artifacts
 	rm -rf $(BUILD) $(CAD)/__pycache__
