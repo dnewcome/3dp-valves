@@ -47,15 +47,14 @@ manifold`), so changing one interface constant and rebuilding keeps every part i
 ## Build
 
 ```bash
-pip install build123d trimesh           # + matplotlib for the section PNG
-python3 cad/solenoid_block.py           # -> build/solenoid_block.stl
-python3 cad/poppet.py
-python3 cad/tpu_disc.py
-python3 cad/manifold.py
-python3 cad/assembly.py                 # -> build/assembly{,_section}.stl, .png
+make deps        # pip install build123d trimesh matplotlib manifold3d
+make             # build all parts + assembly/section render into build/
+make help        # list targets (parts, assembly, clean, ...)
 ```
 
-Each script prints a sanity line (bounding box, body count, watertight flag).
+Or run a single script directly, e.g. `python3 cad/solenoid_block.py`. Each script
+prints a sanity line (bounding box, body count, watertight flag). The Makefile tracks
+the import chain, so editing `interface.py` rebuilds every dependent part.
 
 ## Status
 
