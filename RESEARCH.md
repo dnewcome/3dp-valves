@@ -31,10 +31,11 @@ orifice ≈ 4.5 N seating force; the small 6 N unit clears it *if near-seated*.
 1. **Direct-acting is mandatory.** Pilot-operated valves need ~5–10 psi differential to open; won't work at low pressure / zero flow. Custom poppet must be coil-force-only. Caps practical orifice size per coil.
 2. **NC = fail-safe but fights continuous duty.** De-energized = closed (spring) is the safe default, but coil must stay energized to keep flow on, and cheap solenoids overheat held on. **Flame-FX poofers rescue this** — brief energization = intermittent duty, where small cheap solenoids thrive. *Held* pneumatic cylinders are the hard case (continuous-duty or latching coil).
 3. **Latching/bistable solenoids** — pulse to switch, zero holding power, no heat. Good for held-open cases; adds driver complexity.
+4. **Pressure-to-close, not pressure-to-open.** Orient the flow so supply pressure presses the poppet ONTO the seat (chamber = supply, orifice = outlet). Then the return spring only reseats at zero ΔP (light), and the coil opens from the seated gap where its force peaks. The opposite orientation makes the spring hold against pressure — and a compression spring is weakest when seated (least compressed), exactly when it must hold most. Cost of pressure-to-close: coil sets max orifice, A_max ≈ F_coil / P (≈Ø6 at 25 psi, ≈Ø3 at 100 psi for a 6 N coil).
 
 **Net:** design the parametric block around a small continuous-duty 12V push-pull
-(Makermotor-class), direct-acting, NC, gap-closes-at-seat — keep the U.S. Solid Viton
-valve as a drop-in fallback in the same manifold footprint.
+(Makermotor-class), direct-acting, NC, **pressure-to-close** (gap-closes-at-seat) —
+keep the U.S. Solid Viton valve as a drop-in fallback in the same manifold footprint.
 
 ## Sources
 - Makermotor PN00121: https://makermotor.com/pn00121-12vdc-push-pull-solenoid-actuator-6n-at-10mm-stroke-1-85a/

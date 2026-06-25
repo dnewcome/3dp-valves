@@ -1,38 +1,48 @@
 """solenoid_block.py — single-channel direct-acting NC poppet solenoid valve BODY.
 Houses a separate plunger+poppet (with TPU seal) and a 12V push-pull solenoid
-(Makermotor PN00121 class: ~8mm plunger, ~10mm stroke). Direct-acting, normally
-closed: return spring pushes the poppet onto the seat; energizing the coil lifts it.
+(Makermotor PN00121 class: ~8mm plunger, ~10mm stroke).
     python cad/solenoid_block.py -> build/solenoid_block.stl
 
-Now uses the shared bottom-face PORT INTERFACE (interface.py): inlet enters the
-BOTTOM face on the central axis, coaxial with orifice/plunger/coil (valve-island
-style), so the block bolts down onto a manifold with a TPU gasket sealing the joint.
-The block bottom is a FLAT land; the gasket groove lives on the manifold.
+PRESSURE-TO-CLOSE layout: supply pressure fills the chamber and pushes the poppet
+ONTO the seat, so pressure helps seal. The return spring only has to reseat the
+poppet at zero pressure (light spring). The solenoid pulls the poppet UP to open,
+against P x orifice-area + spring -- and it pulls from the seated position where the
+magnetic gap is smallest and coil force is greatest. (See BRIEF.md for the force
+balance and why this beats pressure-to-open.)
 
-Flow: bottom inlet -> vertical orifice -> seat land -> chamber -> outlet(+X).
-The chamber->guide step is the return-spring upper seat. The coil bore pole sits
-just above the plunger so the magnetic gap is SMALLEST when the poppet is seated.
+Flow:
+  bottom inlet (manifold) -> off-axis riser -> CHAMBER (supply, surrounds poppet)
+  CHAMBER --(poppet lifts off seat)--> orifice -> +X OUTLET
+Supply path runs up the -X side; the outlet exits +X; both lie in the XZ plane so
+they show in the Y=0 section. Coil bore pole sits just above the seated plunger.
 """
 import os
 from build123d import *
 from interface import TILE, PORT_D, BOLT_CLEAR_D, bolt_xy
 
 # ---- block envelope ----
-BH = 43.0                          # block height (raised from 40 to give the spring room)
+BH = 43.0                          # block height
 
-# ---- bottom inlet (shared interface) ----
-SUPPLY_Z_TOP = 10.0                # inlet bore (Ø PORT_D) rises bottom..here, then necks to orifice
-
-# ---- seat / orifice ----
-ORIFICE_D    = 3.0                 # flow orifice; 100psi x area ~= 4.5N seating demand
+# ---- seat / orifice (on the central axis; orifice now drains DOWN to the outlet) ----
+ORIFICE_D    = 3.0                 # flow orifice; sets P x A the coil must open against
 SEAT_OD      = 6.0                 # flat sealing land OD (TPU poppet seats here)
 SEAT_FLOOR_Z = 12.0                # chamber floor height
 SEAT_RAISE   = 1.0                 # land protrudes this far into the chamber
 
-# ---- valve chamber (poppet lift space, flow path to outlet) ----
+# ---- valve chamber (= supply plenum; poppet lift space) ----
 CHAMBER_D     = 12.0               # poppet OD ~11 -> ~0.5mm annular flow gap
 CHAMBER_TOP_Z = 23.0               # chamber spans SEAT_FLOOR_Z..here; ceiling = spring seat
-OUTLET_Z      = 16.0              # outlet bore centerline (+X face), into chamber
+
+# ---- outlet (+X side, fed by the orifice) ----
+OUTLET_Z = 7.0                     # outlet bore centerline; orifice drops into it
+
+# ---- bottom inlet + off-axis supply riser into the chamber ----
+SUP_PORT_TOP = 3.0                 # bottom port (Ø PORT_D, manifold interface) rises 0..here
+SUP_JOG_Z    = 1.5                 # horizontal jog height connecting port -> riser
+RISER_X      = -9.0                # riser sits in the -X wall, clear of chamber + bolts
+RISER_D      = 3.5
+FEED_Z       = 20.0                # radial feed pierces the chamber wall above the poppet
+FEED_D       = 3.0
 
 # ---- plunger guide ----
 PLUNGER_D   = 8.0                  # reference: the solenoid plunger diameter
@@ -59,20 +69,28 @@ def part():
     chamber  = _zcyl(CHAMBER_D, SEAT_FLOOR_Z, CHAMBER_TOP_Z)
     guide    = _zcyl(GUIDE_D, CHAMBER_TOP_Z, GUIDE_TOP_Z)
     coilbore = _zcyl(COIL_BORE_D, GUIDE_TOP_Z, BH + EPS)            # open through top
-    supply   = _zcyl(PORT_D, -EPS, SUPPLY_Z_TOP)                    # bottom inlet, open bottom
-    outlet   = _xcyl(PORT_D, -1.0, TILE / 2 + EPS, OUTLET_Z)        # center to +X face
+
+    # supply: bottom port -> jog -> riser -> radial feed into the chamber (all -X side)
+    sup_port = _zcyl(PORT_D, -EPS, SUP_PORT_TOP)                    # bottom inlet, open bottom
+    sup_jog  = _xcyl(RISER_D, RISER_X, 0.5, SUP_JOG_Z)             # port -> riser
+    sup_riser = _zcyl(RISER_D, 1.0, FEED_Z + 1.0, x=RISER_X)
+    sup_feed = _xcyl(FEED_D, RISER_X, -2.5, FEED_Z)                # riser -> chamber
+
+    # outlet: +X side bore fed by the orifice
+    outlet = _xcyl(PORT_D, -0.5, TILE / 2 + EPS, OUTLET_Z)
 
     holes = [Pos(x, y, BH / 2) * Cylinder(BOLT_CLEAR_D / 2, BH + 2 * EPS)
              for (x, y) in bolt_xy()]
 
-    body = body.cut(chamber, guide, coilbore, supply, outlet, *holes)
+    body = body.cut(chamber, guide, coilbore, sup_port, sup_jog, sup_riser,
+                    sup_feed, outlet, *holes)
 
     # raised sealing land, welded 1mm into the chamber floor (>=1mm overlap to fuse)
     land = _zcyl(SEAT_OD, SEAT_FLOOR_Z - 1.0, SEAT_FLOOR_Z + SEAT_RAISE)
     body = body.fuse(land)
 
-    # orifice last: drills through the land and connects down to the supply bore
-    orifice = _zcyl(ORIFICE_D, SUPPLY_Z_TOP - EPS, SEAT_FLOOR_Z + SEAT_RAISE + EPS)
+    # orifice last: through the land, draining DOWN into the +X outlet bore
+    orifice = _zcyl(ORIFICE_D, OUTLET_Z - 0.5, SEAT_FLOOR_Z + SEAT_RAISE + EPS)
     body = body.cut(orifice)
 
     return body

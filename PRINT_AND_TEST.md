@@ -20,8 +20,10 @@ possible learning — don't replicate an unsealed design.
 
 - 12V push-pull solenoid, **continuous-duty**, ~8 mm plunger, ~10 mm stroke
   (Makermotor PN00121 class). **Measure it and update `COIL_BORE_D` in `cad/solenoid_block.py`.**
-- Return compression spring: OD ≈ 7 mm, free length ≈ 5–6 mm, light rate (it only has to
-  reseat the poppet). Sits in the chamber on the poppet top, bears on the chamber ceiling.
+- Return compression spring: OD ≈ 7 mm, free length ≈ 5–6 mm, **light** (~0.5–1 N). With
+  the pressure-to-close layout it only reseats the poppet at zero pressure — supply
+  pressure does the sealing. Sits in the chamber on the poppet top, bears on the ceiling.
+  Don't oversize it: a stiff spring just makes the solenoid work harder to open.
 - 4× M3 socket-head screws + heat-set inserts (for the manifold joint).
 - Push-to-connect or barb fittings for the ports (tap the bottom inlet / +X outlet to taste).
 - Thread sealant / PTFE tape rated for the medium.
@@ -61,6 +63,8 @@ possible learning — don't replicate an unsealed design.
 
 ## Pneumatic / 100 psi note
 
-Same body works mechanically, but verify seat force margin (F ≈ P × orifice area ≈ 1 lbf
-at 3 mm / 100 psi) and that the spring + coil can overcome it. The A/B+exhaust 2-way
-cylinder valve is a separate (stretch) block — not yet modeled.
+Pressure-to-close means the coil must OPEN against P × orifice-area (+ light spring).
+At 100 psi / Ø3 that's ≈ 4.9 N + ~1 N ≈ 6 N — right at a small coil's limit, but the
+pull happens from the seated position where coil force peaks, so it's feasible. Bigger
+pneumatic flow (larger orifice) needs a stronger coil or a pilot/3-way. The A/B+exhaust
+2-way cylinder valve is a separate (stretch) block — not yet modeled.

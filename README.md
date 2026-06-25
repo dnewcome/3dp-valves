@@ -13,18 +13,23 @@ pattern), so manifold configurations are assembled from composable blocks.
 
 ## Design
 
-A single channel is a **direct-acting, normally-closed poppet valve**:
+A single channel is a **direct-acting, normally-closed, pressure-to-close poppet valve**:
 
 ```
-  bottom inlet ─► orifice ─► seat land ─► chamber ─► outlet (+X)
-                                  ▲
-              TPU disc on poppet seals the seat; a return spring holds it
-              closed; a 12V push-pull solenoid lifts it open.
+  inlet (manifold, bottom) ─► -X riser ─► chamber  (supply surrounds the poppet)
+                                              │  poppet lifts off the seat
+                                              ▼
+                                       orifice ─► +X outlet
 ```
 
+- **Pressure-to-close** — supply fills the chamber and presses the poppet onto the seat,
+  so pressure *helps* seal. The return spring is light (just reseats at zero pressure);
+  the solenoid opens against P × orifice-area + spring, pulling from the seated position
+  where the magnetic gap is smallest and coil force is greatest.
 - **Direct-acting** (coil force only) — required for low-pressure / low-differential gas.
 - **Normally-closed** — fail-safe (de-energized = shut).
-- **Magnetic gap is smallest at the seated position**, where seating force is needed most.
+- Tradeoff: the coil sets the max openable orifice (`A_max ≈ F_coil / P`) — generous at
+  25 psi propane, tight (~Ø3) at 100 psi air. See [`BRIEF.md`](BRIEF.md).
 
 See [`BRIEF.md`](BRIEF.md) for scope, [`RESEARCH.md`](RESEARCH.md) for solenoid/valve
 selection and the duty-cycle / direct-vs-pilot reasoning, and
