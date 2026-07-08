@@ -11,8 +11,10 @@ pattern), so manifold configurations are assembled from composable blocks.
 
 The repo now has two subsystems:
 - **Valves** — direct-acting solenoid poppet valves + manifolds for compressed gas (below).
-- **Pump** — a twin-cylinder **S-valve pump** for pumping fluids full of suspended solids
-  (glass beads in mineral oil) without clogging. See **[`PUMP.md`](PUMP.md)**.
+- **Pumps** — **two versions** of a solids-handling positive-displacement pump for fluids
+  full of suspended solids (glass beads in mineral oil): a **horizontal S-valve** pump
+  ([`PUMP.md`](PUMP.md)) and a **vertical submersible** rotary-distributor pump
+  ([`VPUMP.md`](VPUMP.md)). Both are kept and maintained.
 
 ![2-channel valve stack, Y=0 section](build/assembly_section.png)
 
@@ -67,33 +69,40 @@ Or run a single script directly, e.g. `python3 cad/solenoid_block.py`. Each scri
 prints a sanity line (bounding box, body count, watertight flag). The Makefile tracks
 the import chain, so editing `interface.py` rebuilds every dependent part.
 
-## Pump subsystem (solids-handling)
+## Pumps (solids-handling) — two versions
 
-Where the valve blocks are all *small* precision orifices and poppet seats, the pump is
+Where the valve blocks are all *small* precision orifices and poppet seats, the pumps are
 the opposite — **large, clear, unobstructed passages** so suspended solids (glass beads in
-mineral oil) never meet anything smaller than themselves. Two cylinders reciprocate 180°
-out of phase; a big swinging **S-tube** alternately connects each to the discharge; one
-crankshaft runs it all. Every bead-wetted passage is ≥ 4× the design bead (enforced at
-build). Full write-up + print/test notes in **[`PUMP.md`](PUMP.md)**.
+mineral oil) never meet anything smaller than themselves. Both are positive-displacement,
+run two cylinders 180° out of phase off one crankshaft, and share the same bead-safe parts
+and clog guard (every wetted passage ≥ 4× the design bead, enforced at build). They differ
+in orientation and directional valve:
+
+| Version | Directional valve | Shaft | Best for | Port coverage | Docs |
+|---|---|---|---|---|---|
+| **Horizontal S-valve** | swinging **S-tube** | horizontal crank | bench / open-top hopper | ~41% (plain eccentric → wants a dwell cam) | [`PUMP.md`](PUMP.md) |
+| **Vertical submersible** | coaxial **rotary distributor** | vertical shaft | running **submerged** | **~89%** (kidney arc = free dwell) | [`VPUMP.md`](VPUMP.md) |
+
+A MuJoCo timing sim measures the port coverage of each (`sim/pump_sim.py`, `sim/vpump_sim.py`).
+
+### Horizontal S-valve pump
+
+A big swinging **S-tube** alternately connects each cylinder to the discharge — nothing
+small to jam. The sim found a plain crank eccentric seals the discharging port only ~41% of
+the cycle, so the swing wants a **dwell cam**. Full write-up in **[`PUMP.md`](PUMP.md)**.
 
 ![Twin-cylinder S-valve pump — exterior](build/pump_assembly.png)
 
 ```bash
 make pump            # build the pump parts + assembly/section renders
-make mujoco          # interactive MuJoCo timing sim (watch the swing track the ports)
-make mujoco-demo     # headless: swing-timing figure + animated gif
+make mujoco          # interactive timing sim (watch the swing track the ports)
 ```
 
-A MuJoCo timing sim (`sim/pump_sim.py`) already answered the riskiest question: a plain
-crank eccentric seals the discharging port only ~41% of the cycle (sinusoidal swing), so
-the swing wants a **dwell cam** with a right-angle take-off — details in `PUMP.md`.
+### Vertical submersible pump
 
-### Vertical submersible variant
-
-A [vertical-shaft variant](VPUMP.md) runs the pump **submerged**: the vertical shaft makes
-the directional valve a **rotary distributor** coaxial with the drive, which gives the
-dwell for free (**~89%** of the cycle sealed, vs 41% for the plain eccentric). Opposed
-cylinders, 90° up-piping, and an output riser to the surface.
+The vertical shaft makes the directional valve a **rotary distributor** coaxial with the
+drive, which gives the dwell for free (**~89%** of the cycle sealed). Opposed cylinders,
+90° up-piping, output riser to the surface. Full write-up in **[`VPUMP.md`](VPUMP.md)**.
 
 ![Vertical submersible pump — section](build/v_pump_assembly_section.png)
 
@@ -104,11 +113,15 @@ make vmujoco         # interactive timing sim of the rotary distributor (~89% co
 
 ## Status
 
-Working MVP: one complete sealed channel + a 2-channel manifold, all watertight.
-**Next:** print and pressure-test a single channel at 25 psi before scaling up.
+- **Valves:** working MVP — one complete sealed channel + a 2-channel manifold, all
+  watertight. Next: print and pressure-test a single channel at 25 psi.
+- **Pumps:** **two** working versions kept side by side — the horizontal S-valve pump
+  ([`PUMP.md`](PUMP.md)) and the vertical submersible rotary-distributor pump
+  ([`VPUMP.md`](VPUMP.md)). All parts watertight, timing simulated for both. Open details
+  (dwell cam / rotary-union seal, hopper, bench test) are tracked in their docs.
 
-Not yet modeled: the A/B + exhaust 2-way cylinder valve (pneumatics stretch goal) and a
-schematic-driven generator that emits manifolds from a flow description.
+Not yet modeled: the A/B + exhaust 2-way cylinder valve (pneumatics stretch) and a
+schematic-driven manifold generator.
 
 ## Safety
 

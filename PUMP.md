@@ -6,6 +6,10 @@ It borrows the concrete-pump trick: the only "valve" is a **fat swinging tube** 
 bore is far bigger than any bead, so there is no small orifice or seat to jam. Built in
 [build123d](https://github.com/gumyr/build123d), same conventions as the valve blocks.
 
+> This is the **horizontal** version (bench / open-top hopper). For running the pump
+> **submerged**, see the [**vertical submersible version**](VPUMP.md) — same bead-safe
+> parts, a vertical shaft, and a coaxial rotary distributor. Both are maintained.
+
 See [`PUMP_BRIEF.md`](PUMP_BRIEF.md) for scope/decisions.
 
 ![S-valve pump — X≥0 section: bore → wear ring → swing tube → discharge](build/pump_assembly_section.png)
