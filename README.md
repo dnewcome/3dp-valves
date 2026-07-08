@@ -9,6 +9,11 @@ The idea: replace expensive miniature gas valves and manifolds with cheap printe
 that share a standard mating-face **port interface** (port + TPU gasket groove + bolt
 pattern), so manifold configurations are assembled from composable blocks.
 
+The repo now has two subsystems:
+- **Valves** — direct-acting solenoid poppet valves + manifolds for compressed gas (below).
+- **Pump** — a twin-cylinder **S-valve pump** for pumping fluids full of suspended solids
+  (glass beads in mineral oil) without clogging. See **[`PUMP.md`](PUMP.md)**.
+
 ![2-channel valve stack, Y=0 section](build/assembly_section.png)
 
 ## Design
@@ -61,6 +66,41 @@ make help        # list targets (parts, assembly, clean, ...)
 Or run a single script directly, e.g. `python3 cad/solenoid_block.py`. Each script
 prints a sanity line (bounding box, body count, watertight flag). The Makefile tracks
 the import chain, so editing `interface.py` rebuilds every dependent part.
+
+## Pump subsystem (solids-handling)
+
+Where the valve blocks are all *small* precision orifices and poppet seats, the pump is
+the opposite — **large, clear, unobstructed passages** so suspended solids (glass beads in
+mineral oil) never meet anything smaller than themselves. Two cylinders reciprocate 180°
+out of phase; a big swinging **S-tube** alternately connects each to the discharge; one
+crankshaft runs it all. Every bead-wetted passage is ≥ 4× the design bead (enforced at
+build). Full write-up + print/test notes in **[`PUMP.md`](PUMP.md)**.
+
+![Twin-cylinder S-valve pump — exterior](build/pump_assembly.png)
+
+```bash
+make pump            # build the pump parts + assembly/section renders
+make mujoco          # interactive MuJoCo timing sim (watch the swing track the ports)
+make mujoco-demo     # headless: swing-timing figure + animated gif
+```
+
+A MuJoCo timing sim (`sim/pump_sim.py`) already answered the riskiest question: a plain
+crank eccentric seals the discharging port only ~41% of the cycle (sinusoidal swing), so
+the swing wants a **dwell cam** with a right-angle take-off — details in `PUMP.md`.
+
+### Vertical submersible variant
+
+A [vertical-shaft variant](VPUMP.md) runs the pump **submerged**: the vertical shaft makes
+the directional valve a **rotary distributor** coaxial with the drive, which gives the
+dwell for free (**~89%** of the cycle sealed, vs 41% for the plain eccentric). Opposed
+cylinders, 90° up-piping, and an output riser to the surface.
+
+![Vertical submersible pump — section](build/v_pump_assembly_section.png)
+
+```bash
+make vpump           # build the vertical submersible pump + renders
+make vmujoco         # interactive timing sim of the rotary distributor (~89% coverage)
+```
 
 ## Status
 
